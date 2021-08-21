@@ -92,6 +92,9 @@ int main(void){
 	initGPIO();
 
 	//Set random time (3:04PM)
+	wiringPiI2CWriteReg8(RTC, HOUR_REGISTER, 15);
+	wiringPiI2CWriteReg8(RTC, MIN_REGISTER, 04);
+	wiringPiI2CWriteReg8(RTC, SEC_REGISTER, 00);
 	//You can comment this file out later
 	wiringPiI2CWriteReg8(RTC, HOUR_REGISTER, 0x13+TIMEZONE);
 	wiringPiI2CWriteReg8(RTC, MIN_REGISTER, 0x4);
@@ -102,14 +105,17 @@ int main(void){
 	for (;;){
 		//Fetch the time from the RTC
 		//Write your logic here
-		secs = wiringPiI2CReadReg8(RTC,0x00);
-		mins = wiringPiI2CReadReg8(RTC,0x01);
-		hours =wiringPiI2CReadReg8(RTC,0x02); 
+		secs = wiringPiI2CReadReg8(RTC,SEC_REGISTER);
+		mins = wiringPiI2CReadReg8(RTC,MIN_REGISTER);
+		hours =wiringPiI2CReadReg8(RTC,HOUR_REGISTER); 
 		
-		hours = hFormat(hours);
-
+		if( hours >= 24){
+			hours = 0;
+		}
+		
 		//Toggle Seconds LED
 		//Write your logic here
+
 		wiringPiSetup();
 		pinMode(1, OUTPUT);
 		digitalWrite(1, HIGH);
@@ -118,7 +124,7 @@ int main(void){
 		
 		// Print out the time we have stored on our RTC
 		printf("The current time is: %d:%d:%d\n", hours, mins, secs);
-
+		
 		//using a delay to make our program "less CPU hungry"
 		delay(1000); //milliseconds
 	}
@@ -210,6 +216,21 @@ void hourInc(void){
 		//Fetch RTC Time
 		//Increase hours by 1, ensuring not to overflow
 		//Write hours back to the RTC
+		secs = wiringPiI2CReadReg8(RTC, SEC_REGISTER);
+		mins = wiringPiI2CReadReg8(RTC, MIN_REGISTER);
+		hours = wiringPiI2CReadReg8(RTC, HOUR_REGISTER);
+		
+		if( hours >= 24){
+			hours = 0;
+			hours+=1;
+		}
+		else{
+			hours+=1;
+		}
+		
+		wiringPiI2CWriteReg8(RTC, SEC_REGISTER, secs);
+		wiringPiI2CWriteReg8(RTC, MIN_REGISTER, mins);
+		wiringPiI2CWriteReg8(RTC, HOUR_REGISTER, hours);
 	}
 	lastInterruptTime = interruptTime;
 }
@@ -228,6 +249,28 @@ void minInc(void){
 		//Fetch RTC Time
 		//Increase minutes by 1, ensuring not to overflow
 		//Write minutes back to the RTC
+		
+		secs = wiringPiI2CReadReg8(RTC, SEC_REGISTER);
+		mins = wiringPiI2CReadReg8(RTC, MIN_REGISTER);
+		hours = wiringPiI2CReadReg8(RTC, HOUR_REGISTER);
+		
+		if( hours >= 24){
+			hours = 0;
+		}
+		
+		// Increment minutes
+		if( mins >= 59){
+			mins = 0;
+			hours+=1;
+		}
+		else{
+			mins+=1;
+		}
+
+		wiringPiI2CReadReg8(RTC, SEC_REGISTER);
+		wiringPiI2CReadReg8(RTC, MIN_REGISTER);
+		wiringPiI2CReadReg8(RTC, HOUR_REGISTER);
+
 	}
 	lastInterruptTime = interruptTime;
 }
