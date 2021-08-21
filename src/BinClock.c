@@ -64,14 +64,6 @@ void initGPIO(void){
 	//Set up the LED
 	//Write your Logic here
 	pinMode(LED, INPUT);  // NOT SURE ABOUT THE MODE
-
-	/* Delete later
-	pinMode(LED, OUTPUT);	
-	for(;;){
-		digitalWrite(LED, HIGH); delay(500);
-		digitalWrite(LED, LOW); delay(500);
-	}
-	*/ 
 	
 	printf("LED and RTC done\n");
 	
@@ -99,8 +91,6 @@ int main(void){
 	signal(SIGINT,CleanUp);
 	initGPIO();
 
-	printf("%s %d", "The RTC ", RTC);
-
 	//Set random time (3:04PM)
 	//You can comment this file out later
 	wiringPiI2CWriteReg8(RTC, HOUR_REGISTER, 0x13+TIMEZONE);
@@ -108,14 +98,23 @@ int main(void){
 	wiringPiI2CWriteReg8(RTC, SEC_REGISTER, 0x00);
 	
 	// Repeat this until we shut down
-	
-	/*	
+		
 	for (;;){
 		//Fetch the time from the RTC
 		//Write your logic here
+		secs = wiringPiI2CReadReg8(RTC,0x00);
+		mins = wiringPiI2CReadReg8(RTC,0x01);
+		hours =wiringPiI2CReadReg8(RTC,0x02); 
 		
+		hours = hFormat(hours);
+
 		//Toggle Seconds LED
 		//Write your logic here
+		wiringPiSetup();
+		pinMode(1, OUTPUT);
+		digitalWrite(1, HIGH);
+		delay(500);
+		digitalWrite(1,LOW);
 		
 		// Print out the time we have stored on our RTC
 		printf("The current time is: %d:%d:%d\n", hours, mins, secs);
@@ -123,7 +122,6 @@ int main(void){
 		//using a delay to make our program "less CPU hungry"
 		delay(1000); //milliseconds
 	}
-	*/
 
 	return 0;
 }
